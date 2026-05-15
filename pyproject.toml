@@ -3,4 +3,10 @@ name = "personal-assistant"
 version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "livekit-agents>=1.5.9",
+    "livekit-plugins-anthropic>=1.5.9",
+    "livekit-plugins-openai>=1.5.9",
+    "livekit-plugins-silero>=1.5.9",
+    "python-dotenv>=1.2.2",
+]
