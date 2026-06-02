@@ -15,6 +15,7 @@ wheels/
 
 # Local debug logs
 logs/
+transcripts/
 
 # macOS
 .DS_Store

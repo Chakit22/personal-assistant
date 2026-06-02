@@ -1,6 +1,6 @@
-# personal-assistant
+# Personal Assistant
 
-A local voice assistant built with LiveKit Agents and Claude.
+LiveKit voice agent for Chakit's personal portfolio. It uses OpenAI STT/TTS, Claude Haiku for reasoning, and Silero VAD for turn detection.
 
 ## Setup
 
@@ -9,47 +9,45 @@ uv sync
 cp .env.example .env
 ```
 
-Fill in:
+Fill in `.env`:
 
 ```env
 ANTHROPIC_API_KEY=
 OPENAI_API_KEY=
 ```
 
-## Run Locally
-
-Start the assistant in console voice mode:
+## Run
 
 ```bash
 uv run python agent.py console
 ```
 
-Use text mode if you want to test without microphone/audio setup:
+Useful console options:
 
 ```bash
 uv run python agent.py console --text
-```
-
-List available audio devices:
-
-```bash
 uv run python agent.py console --list-devices
-```
-
-Pick a specific microphone or speaker:
-
-```bash
 uv run python agent.py console --input-device "MacBook" --output-device "MacBook"
 ```
 
-## Test
+Exit with `Ctrl+C`.
 
-```bash
-uv run pytest
-```
+## What It Does
 
-## Notes
+- Answers questions about Chakit's profile and projects.
+- Softly asks for name and contact early in the call.
+- Saves useful contact or hiring context to `data/leads.jsonl`.
+- Writes full conversation transcripts to `transcripts/`.
+- Writes detailed runtime logs to `logs/agent.log`.
+- Ends the call with LiveKit's `EndCallTool` when the conversation naturally closes.
 
-- The current agent runs locally through LiveKit Agents console mode.
-- Browser/portfolio usage will need LiveKit room token handling later.
-- Provider API keys must stay server-side and should never be exposed to a frontend.
+## Voice Smoke Test
+
+1. Say: "Hi, how are you?"
+2. Confirm it asks for name and email/phone, while allowing refusal.
+3. Mention hiring or an opportunity later.
+4. Provide name, contact, company, and role/context.
+5. Confirm it says: "Let me save those details. One moment please."
+6. Confirm the lead is saved and the call ends after the closing response.
+
+Provider API keys must stay server-side and should never be exposed to a frontend.

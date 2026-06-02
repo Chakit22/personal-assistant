@@ -1,0 +1,12 @@
+approval_policy = "untrusted"
+[mcp_servers.livekit-docs]
+url = "https://docs.livekit.io/mcp"
+
+[projects."/Users/chakitrocks/Developer/personal-projects/personal-assistant"]
+trust_level = "trusted"
+
+[sandbox]
+ask-for-approval = "always"
+
+[tui.model_availability_nux]
+"gpt-5.5" = 1
