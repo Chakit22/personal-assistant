@@ -1,0 +1,40 @@
+[
+  {
+    "id": "atlas-travel-planner",
+    "title": "Atlas - Multi-Agent AI Travel Planner",
+    "overview": "A multi-agent AI travel companion that helps users plan trips with preference-aware recommendations and live external data.",
+    "problem": "Travel planning often requires stitching together weather, flights, attractions, constraints, and personal preferences across different sources.",
+    "stack": ["LangGraph", "Gemini 2.5 Flash", "TypeScript", "SerpApi", "OpenWeatherMap", "AviationStack"],
+    "architecture": "Atlas uses a multi-agent workflow with LangGraph, session persistence, tool-backed live data, and guardrails for safer planning.",
+    "technical_challenge": "Coordinating multiple agents and live data tools while keeping recommendations personal, useful, and bounded.",
+    "outcome": "Currently in progress as Chakit's main multi-agent planning project.",
+    "links": {}
+  },
+  {
+    "id": "staffiq-tutor-assignment",
+    "title": "StaffIQ - Tutor Assignment Platform",
+    "overview": "A full-stack tutor assignment platform for RMIT.",
+    "problem": "Tutor selection and assignment needed structured workflows, admin reporting, and candidate ranking support.",
+    "stack": ["Next.js", "GraphQL", "Express", "Gemini AI", "TypeORM", "MySQL"],
+    "architecture": "The platform uses role-based auth, JWT, a GraphQL admin API, reporting dashboards, and Gemini AI for candidate ranking and resume insights.",
+    "technical_challenge": "Combining admin workflows, AI ranking, and backend reporting in one system.",
+    "outcome": "Built as a full-stack platform with role-based access and AI-assisted candidate evaluation.",
+    "links": {
+      "demo": "https://teach-team.vercel.app",
+      "source_code": "https://github.com/Chakit22/TeachTeam"
+    }
+  },
+  {
+    "id": "medico-legal-rag",
+    "title": "Medico-Legal RAG System",
+    "overview": "A RAG pipeline for medico-legal reports using LangGraph and FastAPI.",
+    "problem": "Medico-legal report workflows can retrieve irrelevant context if all queries use one retrieval strategy.",
+    "stack": ["LangGraph", "LangChain", "FastAPI", "Python", "RAG"],
+    "architecture": "A query router selects between three retrieval strategies before generating a response.",
+    "technical_challenge": "Routing each query to the right retrieval strategy.",
+    "outcome": "Portfolio claim: reduced irrelevant data retrieval by 75%.",
+    "links": {
+      "source_code": "https://github.com/Chakit22/medico-legal-rag"
+    }
+  }
+]

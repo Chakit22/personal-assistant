@@ -13,6 +13,9 @@ wheels/
 .env
 .env.local
 
+# Local debug logs
+logs/
+
 # macOS
 .DS_Store
 
