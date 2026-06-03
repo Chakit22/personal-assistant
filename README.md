@@ -51,5 +51,3 @@ Exit with `Ctrl+C`.
 6. Confirm the lead is saved and the call ends after the closing response.
 
 Provider API keys must stay server-side and should never be exposed to a frontend.
-
-I am in worktree dff0
