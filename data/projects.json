@@ -1,14 +1,17 @@
 [
   {
     "id": "atlas-travel-planner",
-    "title": "Atlas - Multi-Agent AI Travel Planner",
-    "overview": "A multi-agent AI travel companion that helps users plan trips with preference-aware recommendations and live external data.",
-    "problem": "Travel planning often requires stitching together weather, flights, attractions, constraints, and personal preferences across different sources.",
-    "stack": ["LangGraph", "Gemini 2.5 Flash", "TypeScript", "SerpApi", "OpenWeatherMap", "AviationStack"],
-    "architecture": "Atlas uses a multi-agent workflow with LangGraph, session persistence, tool-backed live data, and guardrails for safer planning.",
-    "technical_challenge": "Coordinating multiple agents and live data tools while keeping recommendations personal, useful, and bounded.",
-    "outcome": "Currently in progress as Chakit's main multi-agent planning project.",
-    "links": {}
+    "title": "Atlas - AI Travel Companion",
+    "overview": "An AI travel companion built on Anthropic's Claude SDK that plans a 10-day trip in about 2 minutes, remembers users across trips, and switches into GPS-aware companion mode while they are in-destination.",
+    "problem": "Travel planning requires stitching together flights, hotels, places, weather, live nearby data, user preferences, and past trip context across many tools.",
+    "stack": ["Next.js 16", "TypeScript", "Anthropic Claude Haiku 4.5", "Server-Sent Events", "Express", "Postgres", "Neon", "Drizzle ORM", "SerpApi", "Serper.dev", "OpenStreetMap Overpass", "OpenWeatherMap", "Vercel", "Render"],
+    "architecture": "Atlas uses a Next.js frontend with a streaming chat API, an Express API on Render for user and trip CRUD, Neon Postgres for users, trips, conversations, profiles, and preferences, and a native Anthropic tool-use loop with strict schemas. Claude can call tools for flights, hotels, places, nearby open-now results, weather, preference memory, trip metadata updates, and itinerary composition while streaming every tool call to the UI over SSE.",
+    "technical_challenge": "The hardest parts were preserving cross-trip memory, streaming Claude tool use clearly to the UI, validating every tool call with strict schemas, and making companion mode use trip dates plus geolocation to answer live in-destination questions like what is open nearby.",
+    "outcome": "Built as a deployed full-stack travel companion with a Vercel frontend, Render API, Neon database, demo login, real-time streamed tool calls, cross-trip memory, and GPS-aware companion mode.",
+    "links": {
+      "demo": "https://atlas-travel-planner-tau.vercel.app",
+      "source_code": "https://github.com/Chakit22/Travel-Planner"
+    }
   },
   {
     "id": "staffiq-tutor-assignment",
