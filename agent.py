@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
 from livekit import agents
 from livekit.agents import (
@@ -55,8 +56,12 @@ PORTFOLIO_INSTRUCTIONS = (
     "answers short, natural, and easy to follow. Keep responses to 1-3 sentences. "
     "</role>"
     "<project_answers>"
-    "Prefer concrete examples from the profile. When asked about a project, explain "
-    "the problem, stack, architecture, technical challenge, and outcome. "
+    "Prefer concrete examples from the profile. When asked about any project, "
+    "answer in exactly three short parts: one sentence giving an overview, one "
+    "sentence listing the main features, and the exact final sentence: Would "
+    "you like to know more about it? Do not explain the problem, stack, "
+    "architecture, technical challenge, or outcome unless the user specifically "
+    "asks for those details. "
     "Never read raw URLs aloud; refer to links by name, like LinkedIn, GitHub, "
     "resume, portfolio, demo, or source code. "
     "</project_answers>"
@@ -148,7 +153,8 @@ class TranscriptRecorder:
         self.started_at = datetime.now(timezone.utc)
         self.items: list[str] = []
         self.turns: list[tuple[str, str]] = []
-        self.saved = False
+        self.transcript_saved = False
+        self.summary_saved = False
 
     def record(self, event: object) -> None:
         item = getattr(event, "item", None)
@@ -164,19 +170,27 @@ class TranscriptRecorder:
         self.items.append(f"[{timestamp}] {role}: {formatted_text}")
         self.turns.append((role, formatted_text))
 
-    def save(self) -> None:
-        if self.saved or not self.items:
+    def save_transcript(self) -> None:
+        if self.transcript_saved or not self.items:
             return
-        self.saved = True
+        self.transcript_saved = True
 
         TRANSCRIPTS_PATH.mkdir(parents=True, exist_ok=True)
         filename = self.started_at.strftime("conversation_%Y%m%d_%H%M%S.md")
         transcript_path = TRANSCRIPTS_PATH / filename
         transcript_path.write_text("\n".join(self.items) + "\n", encoding="utf-8")
-        self.save_summary()
 
-    def save_summary(self) -> None:
-        summary = " ".join(f"{role}: {text}" for role, text in self.turns)
+    async def save_summary(self) -> None:
+        if self.summary_saved or not self.turns:
+            return
+        self.summary_saved = True
+
+        transcript = "\n".join(f"{role}: {text}" for role, text in self.turns)
+        try:
+            summary = await summarize_conversation(transcript)
+        except Exception:
+            tool_logger.exception("failed to generate conversation summary")
+            summary = "Summary generation failed. See transcript for conversation details."
         CONVERSATION_SUMMARIES_PATH.parent.mkdir(parents=True, exist_ok=True)
         row = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -184,6 +198,30 @@ class TranscriptRecorder:
         }
         with CONVERSATION_SUMMARIES_PATH.open("a", encoding="utf-8") as summaries_file:
             summaries_file.write(json.dumps(row) + "\n")
+
+
+async def summarize_conversation(transcript: str) -> str:
+    client = AsyncAnthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    response = await client.messages.create(
+        model=LLM_MODEL,
+        max_tokens=120,
+        temperature=0,
+        system=(
+            "Summarize this voice assistant conversation for Chakit in 1-3 "
+            "sentences. Include visitor identity, contact details, hiring or "
+            "project context, and follow-up needs if present. Do not include a "
+            "transcript or bullet points."
+        ),
+        messages=[
+            {
+                "role": "user",
+                "content": transcript[-12000:],
+            }
+        ],
+    )
+    return "".join(
+        block.text for block in response.content if getattr(block, "type", "") == "text"
+    ).strip()
 
 
 def _require_env(*keys: str) -> None:
@@ -380,7 +418,7 @@ def build_session() -> AgentSession:
             turn_detection="vad",
         ),
         stt=openai.STT(),
-        llm=anthropic.LLM(model=LLM_MODEL),
+        llm=anthropic.LLM(model=LLM_MODEL, max_tokens=120),
         tts=openai.TTS(speed=TTS_SPEED),
         vad=LoggedVAD(silero.VAD.load()),
     )
@@ -394,7 +432,8 @@ async def entrypoint(ctx: JobContext) -> None:
     session = build_session()
     recorder = TranscriptRecorder()
     session.on("conversation_item_added", recorder.record)
-    session.on("close", lambda _: recorder.save())
+    session.on("close", lambda _: recorder.save_transcript())
+    ctx.add_shutdown_callback(recorder.save_summary)
     await session.start(room=ctx.room, agent=Assistant())
 
 
