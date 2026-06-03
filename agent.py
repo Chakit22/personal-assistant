@@ -28,6 +28,7 @@ TTS_SPEED = 1.4
 PROFILE_PATH = Path(__file__).parent / "data" / "profile.md"
 PROJECTS_PATH = Path(__file__).parent / "data" / "projects.json"
 LEADS_PATH = Path(__file__).parent / "data" / "leads.jsonl"
+CONVERSATION_SUMMARIES_PATH = Path(__file__).parent / "data" / "conversation_summaries.jsonl"
 TRANSCRIPTS_PATH = Path(__file__).parent / "transcripts"
 LOG_PATH = Path(__file__).parent / "logs" / "agent.log"
 logger = logging.getLogger("personal_assistant.vad")
@@ -146,6 +147,8 @@ class TranscriptRecorder:
     def __init__(self) -> None:
         self.started_at = datetime.now(timezone.utc)
         self.items: list[str] = []
+        self.turns: list[tuple[str, str]] = []
+        self.saved = False
 
     def record(self, event: object) -> None:
         item = getattr(event, "item", None)
@@ -154,19 +157,33 @@ class TranscriptRecorder:
         if not role or not text_content:
             return
 
+        formatted_text = format_transcript_text(text_content)
         timestamp = datetime.fromtimestamp(
             getattr(item, "created_at", time.time()), tz=timezone.utc
         ).isoformat()
-        self.items.append(f"[{timestamp}] {role}: {format_transcript_text(text_content)}")
+        self.items.append(f"[{timestamp}] {role}: {formatted_text}")
+        self.turns.append((role, formatted_text))
 
     def save(self) -> None:
-        if not self.items:
+        if self.saved or not self.items:
             return
+        self.saved = True
 
         TRANSCRIPTS_PATH.mkdir(parents=True, exist_ok=True)
         filename = self.started_at.strftime("conversation_%Y%m%d_%H%M%S.md")
         transcript_path = TRANSCRIPTS_PATH / filename
         transcript_path.write_text("\n".join(self.items) + "\n", encoding="utf-8")
+        self.save_summary()
+
+    def save_summary(self) -> None:
+        summary = " ".join(f"{role}: {text}" for role, text in self.turns)
+        CONVERSATION_SUMMARIES_PATH.parent.mkdir(parents=True, exist_ok=True)
+        row = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "summary": summary,
+        }
+        with CONVERSATION_SUMMARIES_PATH.open("a", encoding="utf-8") as summaries_file:
+            summaries_file.write(json.dumps(row) + "\n")
 
 
 def _require_env(*keys: str) -> None:
