@@ -13,6 +13,9 @@ wheels/
 .env
 .env.local
 
+# Local assistant data
+data/
+
 # Local debug logs
 logs/
 transcripts/
