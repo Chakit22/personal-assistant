@@ -23,3 +23,6 @@ transcripts/
 # IDE
 .vscode/
 .idea/
+
+# Local Codex app state
+.codex/
